@@ -1,5 +1,5 @@
 # Superstar
-An enviroment for linking, runtime hooking and code patching in Super Mario Odyssey
+An enviroment for linking, runtime hooking and code patching in Super Mario Odyssey.
 
 # Contributors
 This project is derived from OdysseyReversed and Skyline
