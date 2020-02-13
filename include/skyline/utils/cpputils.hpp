@@ -5,7 +5,6 @@
 #include "operator.h"
 
 #include "nn/fs.h"
-#include "skyline/arc/Hashes.hpp"
 
 #include <cstring>
 #include <functional>
@@ -14,6 +13,8 @@
 
 namespace skyline {
     namespace utils {
+        extern std::string g_RomMountStr;
+
         extern nn::os::EventType g_RomMountedEvent;
 
         extern u64 g_MainTextAddr;
@@ -21,8 +22,6 @@ namespace skyline {
         extern u64 g_MainDataAddr;
         extern u64 g_MainBssAddr;
         extern u64 g_MainHeapAddr;
-
-        extern skyline::arc::Hashes* g_Hashes;
 
         void populateMainAddrs();
 

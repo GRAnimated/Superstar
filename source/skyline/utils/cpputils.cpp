@@ -3,6 +3,8 @@
 
 namespace skyline {
 
+    std::string utils::g_RomMountStr = "content:/";
+
     nn::os::EventType utils::g_RomMountedEvent;
     
     u64 utils::g_MainTextAddr;
@@ -10,8 +12,6 @@ namespace skyline {
     u64 utils::g_MainDataAddr;
     u64 utils::g_MainBssAddr;
     u64 utils::g_MainHeapAddr;
-
-    skyline::arc::Hashes* utils::g_Hashes;
 
     void utils::populateMainAddrs(){
         // find .text

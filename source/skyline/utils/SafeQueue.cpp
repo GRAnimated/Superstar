@@ -30,7 +30,9 @@ namespace utils {
         Result rc = nn::os::CreateThread(&thread, entrypoint, this, stack, stackSize, priority, core);
         if(R_FAILED(rc)){
             skyline::TcpLogger::Log("[SafeTaskQueue] Failed to create thread (0x%x).", rc);
+            return;
         }
+        nn::os::SetThreadName(&thread, "skyline::SafeTaskQueue dispatch");
 
         nn::os::StartThread(&thread);
     }

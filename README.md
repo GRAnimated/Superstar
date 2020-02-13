@@ -1,8 +1,8 @@
-# Skyline
-An enviroment for linking, runtime hooking and code patching in Super Smash Bros Ultimate
+# Superstar
+An enviroment for linking, runtime hooking and code patching in Super Mario Odyssey
 
 # Contributors
-This project is derived from OdysseyReversed and Starlight
+This project is derived from OdysseyReversed and Skyline
 - [3096](https://github.com/3096)
 - [khang06](https://github.com/khang06)
 - [OatmealDome](https://github.com/OatmealDome)

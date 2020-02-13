@@ -3,21 +3,21 @@
 
 .PHONY: all clean skyline send
 
-CROSSVER ?= 600
+RSSVER ?= 120
 
 all: skyline
 
 skyline:
-	$(MAKE) all -f MakefileNSO CROSSVER=$(CROSSVER)
-#	$(MAKE) skyline_patch_$(CROSSVER)/*.ips
+	$(MAKE) all -f MakefileNSO RSSVER=$(RSSVER)
+#	$(MAKE) skyline_patch_$(RSSVER)/*.ips
 
-skyline_patch_$(CROSSVER)/*.ips: patches/*.slpatch patches/configs/$(CROSSVER).config patches/maps/$(CROSSVER)/*.map \
-								build$(CROSSVER)/$(shell basename $(CURDIR))$(CROSSVER).map scripts/genPatch.py
-	@rm -f skyline_patch_$(CROSSVER)/*.ips
-	python3 scripts/genPatch.py $(CROSSVER)
+skyline_patch_$(RSSVER)/*.ips: patches/*.slpatch patches/configs/$(RSSVER).config patches/maps/$(RSSVER)/*.map \
+								build$(RSSVER)/$(shell basename $(CURDIR))$(RSSVER).map scripts/genPatch.py
+	@rm -f skyline_patch_$(RSSVER)/*.ips
+	python3 scripts/genPatch.py $(RSSVER)
 
 send: all
-	python3.7 scripts/sendPatch.py $(IP) $(CROSSVER)
+	python3.7 scripts/sendPatch.py $(IP) $(RSSVER)
 
 clean:
 	$(MAKE) clean -f MakefileNSO

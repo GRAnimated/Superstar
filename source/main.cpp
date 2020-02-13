@@ -19,25 +19,6 @@ char ALIGNA(0x1000) runtimePatchStack[0x7000];
 char ALIGNA(0x1000) exceptionHandlerStack[0x4000];
 nn::os::UserExceptionInfo exceptionInfo;
 
-Result (*ogRoLoadModule)(nn::ro::Module*, const void *, void *, ulong, int);
-
-Result roLoadModuleHook(nn::ro::Module* module, const void * nro, void * buffer, ulong bufferSize, int unk) {
-    Result rc = ogRoLoadModule(module, nro, buffer, bufferSize, unk);
-    
-    skyline::TcpLogger::LogFormat("[roLoadModuleHook] Module \"%s\" loaded.", module->Name);
-
-    return rc;
-}
-
-Result (*ogRoUnloadModule)(nn::ro::Module*);
-
-Result roUnloadModuleHook(nn::ro::Module* module){
-
-    skyline::TcpLogger::LogFormat("[roUnloadModuleHook] Module \"%s\" unloaded.", module->Name);
-
-    return ogRoUnloadModule(module);
-}
-
 void exceptionHandler(nn::os::UserExceptionInfo* info){
     
     skyline::TcpLogger::SendRaw("Exception occured!\n");
@@ -53,21 +34,14 @@ void exceptionHandler(nn::os::UserExceptionInfo* info){
     //*((u64*)0) = 0x69;
 }
 
-void (*lookupCharacterFile)(uint*, char*);
-
-void lookupCharacterFileHook(uint* result, char* path){
-    lookupCharacterFile(result, path);
-
-    skyline::TcpLogger::LogFormat("%s | 0x%x\n", path, *result);
-}
-
-skyline::arc::Hashes* hashes;
-
 void stub() {}
 
 Result (*nnFsMountRomImpl)(char const*, void*, unsigned long);
 
 Result handleNnFsMountRom(char const* path, void* buffer, unsigned long size){
+    if(path != NULL)
+        skyline::utils::g_RomMountStr = std::string(path) + ":/";
+        
     Result rc = nnFsMountRomImpl(path, buffer, size);
     skyline::TcpLogger::LogFormat("[handleNnFsMountRom] Mounted ROM (0x%x)", rc);
     nn::os::SignalEvent(&skyline::utils::g_RomMountedEvent);
@@ -108,41 +82,8 @@ void runtimePatchMain(void*){
     skyline::utils::SafeTaskQueue *taskQueue = new skyline::utils::SafeTaskQueue(100);
     taskQueue->startThread(20, 3, 0x4000);
 
-    skyline::utils::Task* patchVersionTask = new skyline::utils::Task {
-        [](){
-
-    // find version string in memory
-    const char* ver = "Ver. %d.%d.%d";
-    size_t verLen = strlen(ver);
-            char* verPtr = (char*) memmem((void*) skyline::utils::g_MainRodataAddr, skyline::utils::g_MainDataAddr - skyline::utils::g_MainRodataAddr, (char*) ver, verLen);
-    
-    // write "Skyline" to found version string
-    const char* skylineStr = "Skyline";
-    size_t skylineStrLen = strlen(skylineStr);
-            smcMemCpy(verPtr, (void*)skylineStr, skylineStrLen+1); //+1 to write null terminator
-        }
-    };
-    taskQueue->push(new std::unique_ptr<skyline::utils::Task>(patchVersionTask));
-
     // override exception handler to dump info 
-    nn::os::SetUserExceptionHandler(exceptionHandler, exceptionHandlerStack, sizeof(exceptionHandlerStack), &exceptionInfo);
-
-    // nn::ro hooks
-    A64HookFunction(
-        reinterpret_cast<void*>(nn::ro::LoadModule),
-        reinterpret_cast<void*>(roLoadModuleHook), 
-        (void**) &ogRoLoadModule);
-    A64HookFunction(
-        reinterpret_cast<void*>(nn::ro::UnloadModule), 
-        reinterpret_cast<void*>(roUnloadModuleHook), 
-        (void**)&ogRoUnloadModule);
-
-    // data.arc interception hooks
-    A64HookFunction(
-        reinterpret_cast<void*>(text + 0x3126030), 
-        reinterpret_cast<void*>(lookupCharacterFileHook), 
-        (void**) &lookupCharacterFile);
-       
+    //nn::os::SetUserExceptionHandler(exceptionHandler, exceptionHandlerStack, sizeof(exceptionHandlerStack), &exceptionInfo);
 
     skyline::utils::Task* initHashesTask = new skyline::utils::Task {
         []() {
@@ -151,12 +92,10 @@ void runtimePatchMain(void*){
                 skyline::TcpLogger::SendRawFormat("[ROM Waiter] Missed ROM mount event!\n");
             }
 
-            skyline::utils::g_Hashes = new skyline::arc::Hashes();
-
             Result (*nnRoInitializeImpl)();
-    A64HookFunction(
-        reinterpret_cast<void*>(nn::ro::Initialize), 
-        reinterpret_cast<void*>(stub), 
+            A64HookFunction(
+                reinterpret_cast<void*>(nn::ro::Initialize), 
+                reinterpret_cast<void*>(stub), 
                 (void**) &nnRoInitializeImpl);
             nnRoInitializeImpl();
 
@@ -165,9 +104,6 @@ void runtimePatchMain(void*){
     };
 
     taskQueue->push(new std::unique_ptr<skyline::utils::Task>(initHashesTask));
-
-
-    skyline::Plugin::Manager::Init();
 
     // crashes this early in init...
     /*nvnInit(NULL);
@@ -188,5 +124,6 @@ void skylineMain() {
     virtmemSetup();
 
     nn::os::CreateThread(&runtimePatchThread, runtimePatchMain, NULL, &runtimePatchStack, sizeof(runtimePatchStack), 20, 3);
+    nn::os::SetThreadName(&runtimePatchThread, "skyline::RuntimePatchThread");
     nn::os::StartThread(&runtimePatchThread);
 }

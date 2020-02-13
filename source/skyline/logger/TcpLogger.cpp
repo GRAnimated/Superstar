@@ -1,6 +1,5 @@
 #include "skyline/logger/TcpLogger.hpp"
 
-#define IP      "10.4.1.157"
 #define PORT    6969
 
 namespace skyline {
@@ -31,13 +30,14 @@ namespace skyline {
         
         nn::socket::Initialize(socketPool, poolSize, 0x20000, 14);
 
-        A64HookFunction(reinterpret_cast<void*>(nn::socket::Initialize), reinterpret_cast<void*>(stub), NULL); // prevent Smash trying to init sockets twice (crash)
+        A64HookFunction(reinterpret_cast<void*>(nn::socket::Initialize), reinterpret_cast<void*>(stub), NULL); // prevent trying to init sockets twice (crash)
         
         const size_t stackSize = 0x3000;
         void* threadStack = memalign(0x1000, stackSize);
         
         nn::os::ThreadType* thread = new nn::os::ThreadType;
         nn::os::CreateThread(thread, ThreadMain, NULL, threadStack, stackSize, 16, 0);
+        nn::os::SetThreadName(thread, "skyline::TcpLoggerThread");
         nn::os::StartThread(thread);
     }
 

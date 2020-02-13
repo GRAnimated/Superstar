@@ -1,12 +1,12 @@
 #---------------------------------------------------------------------------------
-# Starlight-specific
-# CROSSVER is the target version of SSBU, but without the decimal points
-# This can be changed by compiling for a different version (e.g. make 600)
+# Skyline-specific
+# RSSVER is the target version of Odyssey, but without the decimal points
+# This can be changed by compiling for a different version (e.g. make 120)
 # (used for C defines, filenames, etc)
-# LINKERSCRIPTS is the directory where the function addresses for Splatoon 2 are
+# LINKERSCRIPTS is the directory where the function addresses for Odyssey are
 # stored
-# Each script is stored as syms$(CROSSVER).ld
-# (used for mapping SSBU functions to the proper address)
+# Each script is stored as syms$(RSSVER).ld
+# (used for mapping Odyssey functions to the proper address)
 #---------------------------------------------------------------------------------
 
 LINKERSCRIPTS    := linkerscripts
@@ -29,8 +29,8 @@ include $(DEVKITPRO)/libnx/switch_rules
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
-TARGET		?=	$(notdir $(CURDIR))$(CROSSVER)
-BUILD		?=	build$(CROSSVER)
+TARGET		?=	$(notdir $(CURDIR))$(RSSVER)
+BUILD		?=	build$(RSSVER)
 SOURCES		:= 	source \
 					source/nvn \
 					source/skyline \
@@ -42,7 +42,6 @@ SOURCES		:= 	source \
 					source/skyline/inlinehook \
 					source/skyline/logger \
 					source/skyline/utils \
-					source/skyline/arc \
 					source/skyline/plugin
 DATA		:=	data
 INCLUDES	:=	include
@@ -55,7 +54,7 @@ ARCH	:=	-march=armv8-a -mtune=cortex-a57 -mtp=soft --no-pie -fPIC -ftls-model=lo
 CFLAGS	:=	-g -Wall -ffunction-sections \
 			$(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DCROSSVER=$(CROSSVER) 
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DRSSVER=$(RSSVER) 
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fomit-frame-pointer -fno-exceptions -fno-asynchronous-unwind-tables -fno-unwind-tables -enable-libstdcxx-allocator=new -fpermissive 
 
@@ -145,7 +144,7 @@ $(BUILD):
 	@echo "${SOURCES}"
 	@echo "${CPPFILES}"
 	@[ -d $@ ] || mkdir -p $@
-	@cp $(LINKERSCRIPTS)/syms$(CROSSVER).ld $(LINKERSCRIPTS)/symstemp.ld # This is required because you can't pass a variable to the .specs
+	@cp $(LINKERSCRIPTS)/syms$(RSSVER).ld $(LINKERSCRIPTS)/symstemp.ld # This is required because you can't pass a variable to the .specs
 	$(MAKE) -C $(BUILD) -f $(CURDIR)/MakefileNSO
 	@rm -f $(LINKERSCRIPTS)/symstemp.ld
 
