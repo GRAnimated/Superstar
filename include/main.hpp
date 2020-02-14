@@ -28,4 +28,4 @@
 
 extern nn::os::EventType romMountedEvent;
 
-void skylineMain();
+extern "C" void skylineMain();
