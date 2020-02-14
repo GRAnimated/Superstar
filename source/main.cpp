@@ -18,8 +18,6 @@ void exceptionHandler(nn::os::UserExceptionInfo* info){
     skyline::TcpLogger::SendRawFormat("LR: %" PRIx64 " \n", info->LR.x);
     skyline::TcpLogger::SendRawFormat("SP: %" PRIx64   "\n", info->SP.x);
     skyline::TcpLogger::SendRawFormat("PC: %" PRIx64  "\n", info->PC.x);
-
-    //*((u64*)0) = 0x69;
 }
 
 void stub() {}
