@@ -34,6 +34,10 @@ Result handleNnFsMountRom(char const* path, void* buffer, unsigned long size){
 }
 
 void runtimePatchMain(void*){
+	
+	// override exception handler to dump info 
+	nn::os::SetUserExceptionHandler(exceptionHandler, exceptionHandlerStack, sizeof(exceptionHandlerStack), &exceptionInfo);
+
     // wait for nnSdk to finish booting
     nn::os::SleepThread(nn::TimeSpan::FromNanoSeconds(130000000));
 
@@ -66,9 +70,6 @@ void runtimePatchMain(void*){
 
     skyline::utils::SafeTaskQueue *taskQueue = new skyline::utils::SafeTaskQueue(100);
     taskQueue->startThread(20, 3, 0x4000);
-
-    // override exception handler to dump info 
-    //nn::os::SetUserExceptionHandler(exceptionHandler, exceptionHandlerStack, sizeof(exceptionHandlerStack), &exceptionInfo);
 
     skyline::utils::Task* initHashesTask = new skyline::utils::Task {
         []() {
